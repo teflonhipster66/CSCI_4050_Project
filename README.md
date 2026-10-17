@@ -30,11 +30,12 @@ Graph Traversal:
 -Then, once algorithms are working, we can focus on animation and polish.
 
 ## Team Members
-| Member Name | GitHub Username |
-| Luke Fisher | lwfisher |
+| Member Name     | GitHub Username     |
+| :--- | :--- |
+| Luke Fisher     | lwfisher            |
 | Ethan Esclamado | Ethan-Esclamado |
-| Veer Patel | teflonhipster66 |
-| Trey Buda | |
+| Veer Patel      | teflonhipster66      |
+| Trey Buda       | unknown               |
 ---
 
 ## Design Mock-Ups
