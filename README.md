@@ -50,3 +50,8 @@ Graph Traversal:
 # Dynamic Programming
 ---
 ![Dynamic Programming](/algoflow/public/images/dynamicprogramming.png)
+
+Running information
+cd ./algoflow/
+npm install
+npm run dev
