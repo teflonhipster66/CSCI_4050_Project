@@ -1,0 +1,120 @@
+"use client";
+
+import { useMemo } from "react";
+import { MarkerType, Position, ReactFlow, type Edge, type Node } from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
+
+export type GraphNodeState = "unseen" | "visited" | "candidate" | "queued" | "active" | "sorted" | "empty";
+
+export type GraphVisualizerNode = {
+  /** Keep IDs stable between algorithm steps, even when a heap value changes. */
+  id: string;
+  label: string | number;
+  position: { x: number; y: number };
+  state?: GraphNodeState;
+  caption?: string;
+};
+
+export type GraphVisualizerEdge = {
+  id: string;
+  source: string;
+  target: string;
+  highlighted?: boolean;
+  directed?: boolean;
+  label?: string;
+};
+
+export type GraphVisualizerProps = {
+  nodes: readonly GraphVisualizerNode[];
+  edges: readonly GraphVisualizerEdge[];
+  variant?: "graph" | "heap";
+  ariaLabel?: string;
+  height?: number;
+  onNodeClick?: (nodeId: string) => void;
+};
+
+const stateColors: Record<GraphNodeState, { background: string; border: string }> = {
+  unseen: { background: "#fbfaf5", border: "#8b8e83" },
+  visited: { background: "#e1e9d8", border: "#7a9168" },
+  candidate: { background: "#fce4bb", border: "#df9a45" },
+  queued: { background: "#e0e9f1", border: "#839db1" },
+  active: { background: "#f9d5c6", border: "#df7958" },
+  sorted: { background: "#d8ead7", border: "#62855f" },
+  empty: { background: "#f4f0e7", border: "#aaa69c" },
+};
+
+/** Controlled renderer: pass a new snapshot to display the next algorithm step.
+ * Positions are canvas coordinates in pixels. This component does not run algorithms.
+ */
+export default function GraphVisualizer({
+  nodes,
+  edges,
+  variant = "graph",
+  ariaLabel = "Algorithm graph visualization",
+  height = 340,
+  onNodeClick,
+}: GraphVisualizerProps) {
+  const flowNodes = useMemo<Node[]>(() => nodes.map(node => {
+    const state = node.state ?? "unseen";
+    const colors = stateColors[state];
+    return {
+      id: node.id,
+      position: node.position,
+      sourcePosition: variant === "heap" ? Position.Bottom : Position.Right,
+      targetPosition: variant === "heap" ? Position.Top : Position.Left,
+      ariaLabel: `${node.label}, ${node.caption ?? state}`,
+      data: {
+        label: onNodeClick ? (
+          <button type="button" className="graph-node-action nodrag nopan" onClick={() => onNodeClick(node.id)} aria-label={`${node.label}, ${node.caption ?? state}`}>
+            <strong>{node.label}</strong><small>{node.caption ?? state}</small>
+          </button>
+        ) : <><strong>{node.label}</strong><small>{node.caption ?? state}</small></>,
+      },
+      style: {
+        width: 62, height: 62, borderRadius: "50%", padding: 5,
+        display: "flex", flexDirection: "column", justifyContent: "center",
+        background: colors.background, color: "#292b27",
+        border: `2px ${state === "empty" ? "dashed" : "solid"} ${colors.border}`,
+        fontFamily: "inherit",
+      },
+    };
+  }), [nodes, variant, onNodeClick]);
+
+  const flowEdges = useMemo<Edge[]>(() => edges.map(edge => ({
+    id: edge.id,
+    source: edge.source,
+    target: edge.target,
+    label: edge.label,
+    type: variant === "heap" ? "straight" : "default",
+    animated: edge.highlighted ?? false,
+    markerEnd: edge.directed ? { type: MarkerType.ArrowClosed, color: edge.highlighted ? "#df7958" : "#8b8e83" } : undefined,
+    style: { stroke: edge.highlighted ? "#df7958" : "#8b8e83", strokeWidth: edge.highlighted ? 3 : 2 },
+  })), [edges, variant]);
+
+  return (
+    <div className="algorithm-graph" style={{ width: "100%", height }} role="group" aria-label={ariaLabel}>
+      {nodes.length === 0 ? <p className="graph-empty">Add nodes to display a graph.</p> : (
+        <ReactFlow
+          nodes={flowNodes}
+          edges={flowEdges}
+          fitView
+          fitViewOptions={{ padding: 0.2, maxZoom: 1 }}
+          minZoom={0.2}
+          maxZoom={2}
+          panOnDrag={false}
+          panOnScroll={false}
+          zoomOnScroll={false}
+          zoomOnPinch={false}
+          zoomOnDoubleClick={false}
+          autoPanOnNodeFocus={false}
+          preventScrolling={false}
+          nodesDraggable={false}
+          nodesConnectable={false}
+          elementsSelectable={false}
+          nodesFocusable={false}
+          edgesFocusable={false}
+        />
+      )}
+    </div>
+  );
+}

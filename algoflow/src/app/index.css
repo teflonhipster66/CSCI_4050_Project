@@ -46,10 +46,10 @@ h1 em::after { content: ""; position: absolute; left: 0; right: 0; bottom: -2px;
 .paper-button { background: #faf8f1; border: 1.5px solid #aaa99f; color: #464740; transform: rotate(-.5deg); }
 .ink-button { background: #292b27; border: 1.5px solid #161713; color: #fff; box-shadow: 3px 3px 0 #e0d8c8; transform: rotate(.5deg); }
 .topic-tabs { display: flex; align-items: end; gap: 7px; margin-bottom: 14px; padding-left: 8px; border-bottom: 1px solid #b9b5aa; }
-.topic-tabs button { position: relative; bottom: -1px; border: 1px solid #b9b5aa; border-bottom-color: #b9b5aa; background: #e8e3d9; color: #77766f; padding: 9px 16px 8px; border-radius: 8px 10px 0 0; font-size: 10px; font-weight: 700; cursor: pointer; transform: rotate(-.3deg); }
-.topic-tabs button:nth-child(2) { transform: rotate(.4deg); }.topic-tabs button:nth-child(3) { transform: rotate(-.5deg); }
-.topic-tabs button span { margin-right: 8px; color: #aaa69c; font-family: 'Patrick Hand'; font-size: 12px; }
-.topic-tabs button.selected { z-index: 1; color: #292b27; background: #fbfaf5; border-bottom-color: #fbfaf5; }.topic-tabs button.selected span { color: #e66344; }
+.topic-tabs a { position: relative; bottom: -1px; border: 1px solid #b9b5aa; border-bottom-color: #b9b5aa; background: #e8e3d9; color: #77766f; padding: 9px 16px 8px; border-radius: 8px 10px 0 0; font-size: 10px; font-weight: 700; cursor: pointer; transform: rotate(-.3deg); }
+.topic-tabs a:nth-child(2) { transform: rotate(.4deg); }.topic-tabs a:nth-child(3) { transform: rotate(-.5deg); }
+.topic-tabs a span { margin-right: 8px; color: #aaa69c; font-family: 'Patrick Hand'; font-size: 12px; }
+.topic-tabs a.selected { z-index: 1; color: #292b27; background: #fbfaf5; border-bottom-color: #fbfaf5; }.topic-tabs a.selected span { color: #e66344; }
 
 .page-grid { display: grid; grid-template-columns: minmax(570px, 1fr) 270px; gap: 24px; align-items: start; }
 .heap-board { position: relative; padding: 24px 27px 21px; background: #fbfaf5; border: 1.5px solid #a8a69c; border-radius: 8px 13px 9px 15px; box-shadow: 4px 5px 0 rgba(82,77,64,.1); }
@@ -135,7 +135,19 @@ h1 em::after { content: ""; position: absolute; left: 0; right: 0; bottom: -2px;
 @media (max-width: 760px) {
   .sidebar { position: static; width: 68px; padding: 22px 9px; }.brand { padding: 0 10px 28px; }.brand > span, .nav-item { font-size: 0; }.nav-item { justify-content: center; }.chapter-list, .sidebar-note { display: none; }
   .main { margin-left: 0; width: calc(100% - 68px); padding: 24px 16px; }.topbar { align-items: flex-start; gap: 15px; }h1 { font-size: 23px; }h1 em { font-size: 27px; }.topbar > div > p { display: none; }
-  .header-actions { display: grid; }.paper-button, .ink-button { height: 32px; }.topic-tabs { overflow-x: auto; }.topic-tabs button { white-space: nowrap; padding-inline: 10px; }.page-grid { min-width: 0; }.heap-board { padding: 23px 12px 16px; }
+  .header-actions { display: grid; }.paper-button, .ink-button { height: 32px; }.topic-tabs { overflow-x: auto; }.topic-tabs a { white-space: nowrap; padding-inline: 10px; }.page-grid { min-width: 0; }.heap-board { padding: 23px 12px 16px; }
   .heap-tree { margin-inline: 0; height: 310px; }.heap-node { width: 40px; height: 40px; }.array-label { display: none; }.facts-column { grid-template-columns: 1fr; }.fact-heading, .next-button { grid-column: auto; }
   .graph-canvas { margin-inline: 0; }.dp-workspace { grid-template-columns: 76px 1fr; padding-inline: 0; gap: 8px; }.dp-table > div, .contents-row > * { height: 35px; }.formula-note { display: none; }
 }
+
+/* Route links retain the original navigation and tab styling. */
+a.nav-item, .topic-tabs a { text-decoration: none; }
+
+.algorithm-graph { position: relative; margin: 5px 0 0; }
+.algorithm-graph .react-flow__node strong { display: block; font-size: 18px; }
+.algorithm-graph .react-flow__node small { display: block; font-size: 9px; }
+.algorithm-graph .react-flow__handle { opacity: 0; pointer-events: none; }
+.graph-empty { padding: 24px; text-align: center; color: #77766f; }
+
+.graph-node-action { border: 0; background: transparent; color: inherit; padding: 0; width: 100%; height: 100%; border-radius: 50%; cursor: pointer; }
+.graph-node-action:focus-visible { outline: 3px solid #df7958; outline-offset: 4px; }
