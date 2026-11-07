@@ -151,3 +151,46 @@ a.nav-item, .topic-tabs a { text-decoration: none; }
 
 .graph-node-action { border: 0; background: transparent; color: inherit; padding: 0; width: 100%; height: 100%; border-radius: 50%; cursor: pointer; }
 .graph-node-action:focus-visible { outline: 3px solid #df7958; outline-offset: 4px; }
+
+.heap-input { display: grid; gap: 6px; margin: 15px 4px 2px; }
+.heap-input label { color: #464740; font-size: 10px; font-weight: 700; }
+.heap-input label span { color: #85857c; font-weight: 400; }
+.heap-input-row { display: flex; flex-wrap: wrap; gap: 7px; }
+.heap-input-row input:not([type="range"]) { min-width: 180px; flex: 1 1 220px; height: 34px; padding: 0 9px; border: 1px solid #aaa99f; border-radius: 5px 7px 4px 6px; background: #fffefa; color: #292b27; font-family: 'DM Mono'; font-size: 10px; }
+.heap-input-row .heap-range-slider { width: 160px; min-width: 160px; height: 24px; flex: 0 0 160px; margin: 4px 0; padding: 0; appearance: none; -webkit-appearance: none; border: 0; background: transparent; cursor: pointer; }
+.heap-input-row .heap-range-slider::-webkit-slider-runnable-track { height: 6px; border: 1px solid #aaa99f; border-radius: 5px; background: #e8e3d9; }
+.heap-input-row .heap-range-slider::-moz-range-track { height: 6px; border: 1px solid #aaa99f; border-radius: 5px; background: #e8e3d9; }
+.heap-input-row .heap-range-slider::-webkit-slider-thumb { width: 18px; height: 18px; margin-top: -7px; appearance: none; -webkit-appearance: none; border: 2px solid #a63d28; border-radius: 50%; background: #e8694c; box-shadow: 1px 1px 0 #c4bdb0; }
+.heap-input-row .heap-range-slider::-moz-range-thumb { width: 14px; height: 14px; border: 2px solid #a63d28; border-radius: 50%; background: #e8694c; box-shadow: 1px 1px 0 #c4bdb0; }
+.heap-control-button { min-height: 34px; padding: 0 10px; border: 1px solid #aaa99f; border-radius: 5px 7px 4px 6px; background: #fffefa; color: #464740; font-size: 9px; font-weight: 700; cursor: pointer; }
+.heap-control-button:hover:not(:disabled) { background: #efede4; }
+.heap-control-button:focus-visible, .heap-input-row input:focus-visible { outline: 3px solid #df7958; outline-offset: 2px; }
+.heap-control-button:disabled { opacity: .55; cursor: not-allowed; }
+.heap-control-button.primary-control { border-color: #292b27; background: #292b27; color: #fff; }
+.heap-control-button.primary-control:hover:not(:disabled) { background: #41433d; }
+.heap-input-help, .heap-input-error { min-height: 12px; font-size: 9px; }
+.heap-input-help { color: #77766f; }.heap-input-error { color: #b13e2c; }
+.heap-feedback { min-height: 20px; margin: 0 4px 10px; color: #5d5642; font-family: 'Patrick Hand'; font-size: 14px; }
+.heap-step-controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 12px; }
+.heap-step-controls > span { color: #77766f; font-family: 'Patrick Hand'; font-size: 13px; }
+.heap-step-actions { display: flex; gap: 8px; }
+.array-values .array-sorted { background: #e1e9d8; border-color: #9bab8e; }
+.array-values .array-active { outline: 2px solid #df7958; outline-offset: -2px; }
+.array-values .array-selected { box-shadow: inset 0 0 0 2px #df7958; }
+.heap-complete-message { min-height: 300px; display: grid; place-items: center; margin: 5px 0 0; color: #4d734b; font-family: 'Patrick Hand'; font-size: 19px; }
+.heap-complete .array-values > div { animation: heap-sorted-pop 650ms cubic-bezier(.2,.8,.2,1) both; }
+@keyframes heap-sorted-pop {
+  from { opacity: 0; background: #fce4bb; transform: translateY(14px) scale(.82); }
+  65% { opacity: 1; background: #fce4bb; transform: translateY(-3px) scale(1.05); }
+  to { opacity: 1; background: #e1e9d8; transform: translateY(0) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .heap-complete .array-values > div { animation: none; }
+}
+
+@media (max-width: 760px) {
+  .heap-input-row input:not([type="range"]) { flex-basis: 100%; }
+  .heap-input-row .heap-range-slider { width: min(160px, 42vw); min-width: min(160px, 42vw); flex-basis: min(160px, 42vw); }
+  .array-strip { overflow-x: auto; }
+  .array-values { min-width: 280px; }
+}
