@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { MarkerType, Position, ReactFlow, type Edge, type Node } from "@xyflow/react";
+import { Handle, MarkerType, Position, ReactFlow, type Edge, type Node } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
 export type GraphNodeState = "unseen" | "visited" | "candidate" | "queued" | "active" | "sorted" | "empty";
@@ -64,11 +64,23 @@ export default function GraphVisualizer({
       targetPosition: variant === "heap" ? Position.Top : Position.Left,
       ariaLabel: `${node.label}, ${node.caption ?? state}`,
       data: {
-        label: onNodeClick ? (
-          <button type="button" className="graph-node-action nodrag nopan" onClick={() => onNodeClick(node.id)} aria-label={`${node.label}, ${node.caption ?? state}`}>
-            <strong>{node.label}</strong><small>{node.caption ?? state}</small>
-          </button>
-        ) : <><strong>{node.label}</strong><small>{node.caption ?? state}</small></>,
+        label: (
+          <>
+            {variant === "heap" && (
+              <>
+                <Handle type="source" position={Position.Bottom} id="source-left" style={{ left: "25%" }} />
+                <Handle type="source" position={Position.Bottom} id="source-right" style={{ left: "75%" }} />
+                <Handle type="target" position={Position.Top} id="target-left" style={{ left: "25%" }} />
+                <Handle type="target" position={Position.Top} id="target-right" style={{ left: "75%" }} />
+              </>
+            )}
+            {onNodeClick ? (
+              <button type="button" className="graph-node-action nodrag nopan" aria-label={`${node.label}, ${node.caption ?? state}`}>
+                <strong>{node.label}</strong><small>{node.caption ?? state}</small>
+              </button>
+            ) : <><strong>{node.label}</strong><small>{node.caption ?? state}</small></>}
+          </>
+        ),
       },
       style: {
         width: 62, height: 62, borderRadius: "50%", padding: 5,
@@ -84,6 +96,8 @@ export default function GraphVisualizer({
     id: edge.id,
     source: edge.source,
     target: edge.target,
+    sourceHandle: variant === "heap" ? `source-${Number(edge.target) % 2 === 1 ? "left" : "right"}` : undefined,
+    targetHandle: variant === "heap" ? `target-${Number(edge.target) % 2 === 1 ? "right" : "left"}` : undefined,
     label: edge.label,
     type: variant === "heap" ? "straight" : "default",
     animated: edge.highlighted ?? false,
@@ -113,6 +127,7 @@ export default function GraphVisualizer({
           elementsSelectable={false}
           nodesFocusable={false}
           edgesFocusable={false}
+          onNodeClick={onNodeClick ? (_, node) => onNodeClick(node.id) : undefined}
         />
       )}
     </div>

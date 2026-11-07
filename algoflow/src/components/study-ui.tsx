@@ -17,7 +17,12 @@ export function Icon({ name, size = 18 }: { name: "grid" | "book" | "chart" | "s
 }
 
 export function BoardHeader({ step, title, progress }: { step: string; title: string; progress: string }) {
-  return <div className="board-header"><div><span className="step-label">{step}</span><h2>{title}</h2></div><div className="progress-doodle"><span>{progress}</span><svg viewBox="0 0 104 16" aria-hidden="true"><path d="M2 8c24 2 64-3 100 0"/><path className="progress-ink" d="M2 8c14 1 22-2 31 0"/></svg></div></div>;
+  const [current, total] = progress.split("/").map(Number);
+  const progressPercent = Number.isFinite(current) && Number.isFinite(total) && total > 0
+    ? Math.max(0, Math.min(100, (current / total) * 100))
+    : 0;
+
+  return <div className="board-header"><div><span className="step-label">{step}</span><h2>{title}</h2></div><div className="progress-doodle"><span>{progress}</span><svg viewBox="0 0 104 16" aria-hidden="true"><path d="M2 8c24 2 64-3 100 0"/><path className="progress-ink" pathLength="100" strokeDasharray={`${progressPercent} ${100 - progressPercent}`} strokeDashoffset="0" d="M2 8c24 2 64-3 100 0"/></svg></div></div>;
 }
 
 export function PencilCallout({ text, left, top }: { text: string; left: string; top: string }) {
@@ -42,4 +47,3 @@ export function Facts({ topic }: { topic: Topic }) {
     </aside>
   );
 }
-
