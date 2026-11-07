@@ -229,7 +229,7 @@ export default function HeapSortPage() {
   const instruction = focusIndex !== null
     ? `Choose the larger child of index ${focusIndex}.`
     : complete
-      ? "The heap is sorted. Build or randomize another heap to try again."
+      ? "The heap is sorted. Build another heap to try again."
       : "Extract the maximum, then sift the replacement down by choosing the larger child.";
 
   useEffect(() => {
