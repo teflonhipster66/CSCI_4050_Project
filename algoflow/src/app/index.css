@@ -172,6 +172,7 @@ a.nav-item, .topic-tabs a { text-decoration: none; }
 .heap-input-help { color: #77766f; }.heap-input-error { color: #b13e2c; }
 .heap-feedback { min-height: 20px; margin: 0 4px 10px; color: #5d5642; font-family: 'Patrick Hand'; font-size: 14px; }
 .heap-step-controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 12px; }
+.bfs-step-controls { margin-top: 32px; }
 .heap-step-controls > span { color: #77766f; font-family: 'Patrick Hand'; font-size: 13px; }
 .heap-step-actions { display: flex; gap: 8px; }
 .array-values .array-sorted { background: #e1e9d8; border-color: #9bab8e; }
@@ -194,3 +195,10 @@ a.nav-item, .topic-tabs a { text-decoration: none; }
   .array-strip { overflow-x: auto; }
   .array-values { min-width: 280px; }
 }
+
+.bfs-table { width: 100%; border-collapse: collapse; margin-top: 16px; text-align: left; }
+.bfs-table caption { text-align: left; margin-bottom: 8px; }
+.bfs-table th, .bfs-table td { padding: 8px; border-bottom: 1px solid #aaa9a0; }
+.board-graph .heap-step-controls, .board-graph .heap-step-actions, .board-graph .queue-strip { flex-wrap: wrap; }
+.board-graph .queue-strip > div:not(.array-label),
+.board-graph .queue-strip > div:not(.array-label) small { color: #000; }

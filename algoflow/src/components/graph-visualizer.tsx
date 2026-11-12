@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { Handle, MarkerType, Position, ReactFlow, type Edge, type Node } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
-export type GraphNodeState = "unseen" | "visited" | "candidate" | "queued" | "active" | "sorted" | "empty";
+export type GraphNodeState = "unseen" | "visited" | "candidate" | "queued" | "active" | "sorted" | "empty" | "white" | "gray" | "black";
 
 export type GraphVisualizerNode = {
   /** Keep IDs stable between algorithm steps, even when a heap value changes. */
@@ -20,6 +20,7 @@ export type GraphVisualizerEdge = {
   source: string;
   target: string;
   highlighted?: boolean;
+  animated?: boolean;
   directed?: boolean;
   label?: string;
 };
@@ -34,6 +35,9 @@ export type GraphVisualizerProps = {
 };
 
 const stateColors: Record<GraphNodeState, { background: string; border: string }> = {
+  white: { background: "#ffffff", border: "#000000" },
+  gray: { background: "#808080", border: "#000000" },
+  black: { background: "#000000", border: "#000000" },
   unseen: { background: "#fbfaf5", border: "#8b8e83" },
   visited: { background: "#e1e9d8", border: "#7a9168" },
   candidate: { background: "#fce4bb", border: "#df9a45" },
@@ -85,7 +89,7 @@ export default function GraphVisualizer({
       style: {
         width: 62, height: 62, borderRadius: "50%", padding: 5,
         display: "flex", flexDirection: "column", justifyContent: "center",
-        background: colors.background, color: "#292b27",
+        background: colors.background, color: state === "black" ? "#ffffff" : "#292b27",
         border: `2px ${state === "empty" ? "dashed" : "solid"} ${colors.border}`,
         fontFamily: "inherit",
       },
@@ -100,7 +104,7 @@ export default function GraphVisualizer({
     targetHandle: variant === "heap" ? `target-${Number(edge.target) % 2 === 1 ? "right" : "left"}` : undefined,
     label: edge.label,
     type: variant === "heap" ? "straight" : "default",
-    animated: edge.highlighted ?? false,
+    animated: edge.animated ?? edge.highlighted ?? false,
     markerEnd: edge.directed ? { type: MarkerType.ArrowClosed, color: edge.highlighted ? "#df7958" : "#8b8e83" } : undefined,
     style: { stroke: edge.highlighted ? "#df7958" : "#8b8e83", strokeWidth: edge.highlighted ? 3 : 2 },
   })), [edges, variant]);
