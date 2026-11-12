@@ -172,7 +172,12 @@ a.nav-item, .topic-tabs a { text-decoration: none; }
 .heap-input-help { color: #77766f; }.heap-input-error { color: #b13e2c; }
 .heap-feedback { min-height: 20px; margin: 0 4px 10px; color: #5d5642; font-family: 'Patrick Hand'; font-size: 14px; }
 .heap-step-controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 12px; }
-.bfs-step-controls { margin-top: 32px; }
+.bfs-step-controls { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr); margin-top: 32px; gap: 24px; }
+.bfs-graph-sliders { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; margin: 0; }
+.bfs-graph-sliders .heap-range-slider { width: 100%; min-width: 0; }
+.bfs-slider { display: grid; justify-items: center; }
+.bfs-edge-controls { justify-content: flex-end; flex-wrap: wrap; margin: 0; }
+.bfs-playback-controls { justify-content: flex-end; margin: 12px 0; }
 .heap-step-controls > span { color: #77766f; font-family: 'Patrick Hand'; font-size: 13px; }
 .heap-step-actions { display: flex; gap: 8px; }
 .array-values .array-sorted { background: #e1e9d8; border-color: #9bab8e; }
@@ -190,6 +195,9 @@ a.nav-item, .topic-tabs a { text-decoration: none; }
 }
 
 @media (max-width: 760px) {
+  .bfs-step-controls { grid-template-columns: 1fr; justify-items: center; }
+  .bfs-graph-sliders { width: 100%; max-width: 344px; }
+  .bfs-edge-controls { justify-content: center; }
   .heap-input-row input:not([type="range"]) { flex-basis: 100%; }
   .heap-input-row .heap-range-slider { width: min(160px, 42vw); min-width: min(160px, 42vw); flex-basis: min(160px, 42vw); }
   .array-strip { overflow-x: auto; }

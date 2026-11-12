@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { Handle, MarkerType, Position, ReactFlow, type Edge, type Node } from "@xyflow/react";
+import { BaseEdge, Handle, MarkerType, Position, ReactFlow, type Edge, type EdgeProps, type Node } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
 export type GraphNodeState = "unseen" | "visited" | "candidate" | "queued" | "active" | "sorted" | "empty" | "white" | "gray" | "black";
@@ -32,7 +32,16 @@ export type GraphVisualizerProps = {
   ariaLabel?: string;
   height?: number;
   onNodeClick?: (nodeId: string) => void;
+  directEdges?: boolean;
 };
+
+type DirectEdge = Edge<{ path: string }, "direct">;
+
+function DirectGraphEdge({ id, data, style, markerEnd }: EdgeProps<DirectEdge>) {
+  return <BaseEdge id={id} path={data?.path ?? ""} style={style} markerEnd={markerEnd} />;
+}
+
+const edgeTypes = { direct: DirectGraphEdge };
 
 const stateColors: Record<GraphNodeState, { background: string; border: string }> = {
   white: { background: "#ffffff", border: "#000000" },
@@ -57,6 +66,7 @@ export default function GraphVisualizer({
   ariaLabel = "Algorithm graph visualization",
   height = 340,
   onNodeClick,
+  directEdges = false,
 }: GraphVisualizerProps) {
   const flowNodes = useMemo<Node[]>(() => nodes.map(node => {
     const state = node.state ?? "unseen";
@@ -96,18 +106,35 @@ export default function GraphVisualizer({
     };
   }), [nodes, variant, onNodeClick]);
 
-  const flowEdges = useMemo<Edge[]>(() => edges.map(edge => ({
+  const flowEdges = useMemo<Edge[]>(() => edges.map(edge => {
+    let path: string | undefined;
+    if (directEdges) {
+      const source = nodes.find(node => node.id === edge.source);
+      const target = nodes.find(node => node.id === edge.target);
+      if (source && target) {
+        // Clip the center-to-center line to each circular node's border.
+        const dx = target.position.x - source.position.x;
+        const dy = target.position.y - source.position.y;
+        const length = Math.hypot(dx, dy) || 1;
+        const offsetX = dx / length * 31;
+        const offsetY = dy / length * 31;
+        path = `M ${source.position.x + 31 + offsetX} ${source.position.y + 31 + offsetY} L ${target.position.x + 31 - offsetX} ${target.position.y + 31 - offsetY}`;
+      }
+    }
+    return {
     id: edge.id,
     source: edge.source,
     target: edge.target,
     sourceHandle: variant === "heap" ? `source-${Number(edge.target) % 2 === 1 ? "left" : "right"}` : undefined,
     targetHandle: variant === "heap" ? `target-${Number(edge.target) % 2 === 1 ? "right" : "left"}` : undefined,
     label: edge.label,
-    type: variant === "heap" ? "straight" : "default",
+    type: directEdges ? "direct" : variant === "heap" ? "straight" : "default",
+    data: path ? { path } : undefined,
     animated: edge.animated ?? edge.highlighted ?? false,
     markerEnd: edge.directed ? { type: MarkerType.ArrowClosed, color: edge.highlighted ? "#df7958" : "#8b8e83" } : undefined,
     style: { stroke: edge.highlighted ? "#df7958" : "#8b8e83", strokeWidth: edge.highlighted ? 3 : 2 },
-  })), [edges, variant]);
+    };
+  }), [edges, variant, directEdges, nodes]);
 
   return (
     <div className="algorithm-graph" style={{ width: "100%", height }} role="group" aria-label={ariaLabel}>
@@ -115,6 +142,7 @@ export default function GraphVisualizer({
         <ReactFlow
           nodes={flowNodes}
           edges={flowEdges}
+          edgeTypes={edgeTypes}
           fitView
           fitViewOptions={{ padding: 0.2, maxZoom: 1 }}
           minZoom={0.2}
