@@ -99,7 +99,7 @@ export default function GraphVisualizer({
       style: {
         width: 62, height: 62, borderRadius: "50%", padding: 5,
         display: "flex", flexDirection: "column", justifyContent: "center",
-        background: colors.background, color: state === "black" ? "#ffffff" : "#292b27",
+        background: colors.background, color: state === "black" || state === "gray" ? "#ffffff" : "#292b27",
         border: `2px ${state === "empty" ? "dashed" : "solid"} ${colors.border}`,
         fontFamily: "inherit",
       },

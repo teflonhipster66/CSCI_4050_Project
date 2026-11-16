@@ -129,13 +129,15 @@ export default function BFSPage() {
           </div>
         </div>
         <GraphVisualizer nodes={nodes} edges={edges} directEdges height={400} ariaLabel="Breadth-first search graph with white, gray, and black vertices" />
-        <p className="heap-feedback" aria-live="polite">{state.message}</p>
+        <div className="bfs-playback-row">
+          <p className="heap-feedback" aria-live="polite">{state.message}</p>
           <div className="heap-step-actions bfs-playback-controls">
             <button type="button" className="heap-control-button" onClick={() => reset()}>Reset</button>
             <button type="button" className="heap-control-button" disabled={state.complete} aria-pressed={running} onClick={() => setAutoRunning(value => !value)}>{running ? "Pause" : "Auto BFS"}</button>
             <button type="button" className="heap-control-button" disabled={history.length <= 1} onClick={previousStep}>Previous step</button>
             <button type="button" className="heap-control-button primary-control" disabled={running || state.complete} onClick={() => setHistory(previous => advanceHistory(graph, previous))}>Next step</button>
           </div>
+        </div>
         <div className="queue-strip" aria-label="BFS queue, front to back">
           <div className="array-label"><span>front</span><strong>the queue</strong></div>
           <span className="queue-arrow">→</span>
