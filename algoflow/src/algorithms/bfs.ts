@@ -55,7 +55,7 @@ export function stepBFS(graph: BFSGraph, state: BFSState): BFSState {
   const neighbor = graph[current][state.neighborIndex];
   if (neighbor !== undefined) {
     if (state.vertices[neighbor].color !== "white") {
-      return { ...state, neighborIndex: state.neighborIndex + 1, lines: "12–13", message: `${neighbor} is already ${state.vertices[neighbor].color}; skip it.` };
+      return { ...state, neighborIndex: state.neighborIndex + 1, lines: "12–13", message: `${neighbor} is already discovered; skip it.` };
     }
     const distance = state.vertices[current].distance + 1;
     return {
