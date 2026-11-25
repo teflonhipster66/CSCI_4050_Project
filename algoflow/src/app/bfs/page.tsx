@@ -42,13 +42,21 @@ export default function BFSPage() {
   const [history, setHistory] = useState(() => [initializeBFS(graph, "A")]);
   const state = history[history.length - 1];
   const [autoRunning, setAutoRunning] = useState(false);
+  const [predictionMode, setPredictionMode] = useState(false);
+  const [predictionFeedback, setPredictionFeedback] = useState<{ step: BFSState; message: string } | null>(null);
+  const remainingNeighbors = state.current === null ? [] : graph[state.current].slice(state.neighborIndex);
+  const nextNeighbor = remainingNeighbors[0];
+  const awaitingPrediction = predictionMode && nextNeighbor !== undefined && state.vertices[nextNeighbor].color === "white";
+  const candidates = awaitingPrediction ? remainingNeighbors.filter(id => state.vertices[id].color === "white") : [];
   const running = autoRunning && !state.complete;
 
   useEffect(() => {
-    if (!running) return;
-    const timer = window.setTimeout(() => setHistory(previous => advanceHistory(graph, previous)), 1000);
+    if (!running || awaitingPrediction) return;
+    const timer = window.setTimeout(() => {
+      setHistory(previous => previous.at(-1) === state ? advanceHistory(graph, previous) : previous);
+    }, 1000);
     return () => window.clearTimeout(timer);
-  }, [running, state, graph]);
+  }, [running, awaitingPrediction, state, graph]);
 
   function reset(nextSource = source) {
     setAutoRunning(false);
@@ -78,13 +86,30 @@ export default function BFSPage() {
 
   function previousStep() {
     setAutoRunning(false);
+    setPredictionFeedback(null);
     setHistory(previous => previous.length > 1 ? previous.slice(0, -1) : previous);
   }
 
-  const nodes: GraphVisualizerNode[] = layout.map(node => ({
-    ...node, label: node.id, state: state.vertices[node.id].color,
-    caption: state.current === node.id ? "current node" : state.vertices[node.id].color,
-  }));
+  function predictNode(id: string) {
+    if (!candidates.includes(id)) return;
+    if (id !== nextNeighbor) {
+      setPredictionFeedback({ step: state, message: `Try again. ${id} can be discovered, but another neighbor comes first alphabetically.` });
+      return;
+    }
+    const nextState = stepBFS(graph, state);
+    setPredictionFeedback({ step: nextState, message: `Correct! ${nextState.message}` });
+    setHistory(previous => previous.at(-1) === state ? [...previous, nextState] : previous);
+  }
+
+  const nodes: GraphVisualizerNode[] = layout.map(node => {
+    const isCandidate = candidates.includes(node.id);
+    const color = state.vertices[node.id].color;
+    return {
+      ...node, label: node.id, state: isCandidate ? "candidate" : color,
+      caption: isCandidate ? "candidate" : state.current === node.id ? "current node" : color,
+      clickable: isCandidate,
+    };
+  });
   const edges = edgePairs.map(([from, to]) => {
     const unchecked = state.current !== null && (
       (from === state.current && graph[from].indexOf(to) >= state.neighborIndex) ||
@@ -97,15 +122,20 @@ export default function BFSPage() {
     };
   });
   const finishedCount = Object.values(state.vertices).filter(vertex => vertex.color === "black").length;
+  const title = !state.initialized ? `Add ${source} to the queue`
+    : state.complete ? "BFS complete!"
+    : state.current ? `Explore ${state.current}'s neighbors` : "Dequeue the front of the queue";
 
   return (
     <div className="page-grid">
       <section className="heap-board board-graph">
         <div className="tape tape-left" />
-        <BoardHeader step="BREADTH-FIRST SEARCH" title={!state.initialized ? `Add ${source} to the queue` : state.complete ? "BFS complete!" : state.current ? `Explore ${state.current}'s neighbors` : "Dequeue the front of the queue"} progress={`${finishedCount}/${layout.length}`} />
+        <BoardHeader step="BREADTH-FIRST SEARCH" title={title} progress={`${finishedCount}/${layout.length}`} />
         <div className="instruction-note blue-note">
           <span className="note-arrow">↳</span>
-          <p>White = undiscovered. Gray = discovered, still being explored. Black = all neighbors checked. Follow FIFO queue order; break distance ties alphabetically.</p>
+          <p aria-live="polite">{awaitingPrediction
+            ? "Select the next node to be discovered."
+            : "White = undiscovered. Gray = discovered, still being explored. Black = all neighbors checked. Follow FIFO queue order and check each vertex’s neighbors alphabetically."}</p>
         </div>
         <div className="heap-step-controls bfs-step-controls">
           <label htmlFor="bfs-source">Start vertex: {" "}
@@ -128,14 +158,18 @@ export default function BFSPage() {
             <button type="button" className="heap-control-button" disabled={randomizedPairs === null} onClick={() => updateGraph(nodeCount, edgeCount, false)}>Default edges</button>
           </div>
         </div>
-        <GraphVisualizer nodes={nodes} edges={edges} directEdges height={400} ariaLabel="Breadth-first search graph with white, gray, and black vertices" />
+        <GraphVisualizer nodes={nodes} edges={edges} directEdges height={400} ariaLabel="Breadth-first search graph" onNodeClick={awaitingPrediction ? predictNode : undefined} />
         <div className="bfs-playback-row">
-          <p className="heap-feedback" aria-live="polite">{state.message}</p>
+          <p className="heap-feedback" aria-live="polite">{predictionFeedback?.step === state ? predictionFeedback.message : state.message}</p>
           <div className="heap-step-actions bfs-playback-controls">
+            <button type="button" className="heap-control-button bfs-prediction-toggle" aria-pressed={predictionMode} onClick={() => {
+              setPredictionFeedback(null);
+              setPredictionMode(value => !value);
+            }}>Prediction mode <span aria-hidden="true">· {predictionMode ? "On" : "Off"}</span></button>
             <button type="button" className="heap-control-button" onClick={() => reset()}>Reset</button>
             <button type="button" className="heap-control-button" disabled={state.complete} aria-pressed={running} onClick={() => setAutoRunning(value => !value)}>{running ? "Pause" : "Auto BFS"}</button>
             <button type="button" className="heap-control-button" disabled={history.length <= 1} onClick={previousStep}>Previous step</button>
-            <button type="button" className="heap-control-button primary-control" disabled={running || state.complete} onClick={() => setHistory(previous => advanceHistory(graph, previous))}>Next step</button>
+            <button type="button" className="heap-control-button primary-control" disabled={running || state.complete || awaitingPrediction} onClick={() => setHistory(previous => advanceHistory(graph, previous))}>Next step</button>
           </div>
         </div>
         <div className="queue-strip" aria-label="BFS queue, front to back">

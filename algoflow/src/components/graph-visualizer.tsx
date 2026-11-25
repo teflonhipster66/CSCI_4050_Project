@@ -13,6 +13,8 @@ export type GraphVisualizerNode = {
   position: { x: number; y: number };
   state?: GraphNodeState;
   caption?: string;
+  /** Set to false to exclude a node when the graph has a click handler. */
+  clickable?: boolean;
 };
 
 export type GraphVisualizerEdge = {
@@ -71,6 +73,7 @@ export default function GraphVisualizer({
   const flowNodes = useMemo<Node[]>(() => nodes.map(node => {
     const state = node.state ?? "unseen";
     const colors = stateColors[state];
+    const clickable = onNodeClick !== undefined && node.clickable !== false;
     return {
       id: node.id,
       position: node.position,
@@ -78,6 +81,7 @@ export default function GraphVisualizer({
       targetPosition: variant === "heap" ? Position.Top : Position.Left,
       ariaLabel: `${node.label}, ${node.caption ?? state}`,
       data: {
+        clickable,
         label: (
           <>
             {variant === "heap" && (
@@ -88,7 +92,7 @@ export default function GraphVisualizer({
                 <Handle type="target" position={Position.Top} id="target-right" style={{ left: "75%" }} />
               </>
             )}
-            {onNodeClick ? (
+            {clickable ? (
               <button type="button" className="graph-node-action nodrag nopan" aria-label={`${node.label}, ${node.caption ?? state}`}>
                 <strong>{node.label}</strong><small>{node.caption ?? state}</small>
               </button>
@@ -102,6 +106,7 @@ export default function GraphVisualizer({
         background: colors.background, color: state === "black" || state === "gray" ? "#ffffff" : "#292b27",
         border: `2px ${state === "empty" ? "dashed" : "solid"} ${colors.border}`,
         fontFamily: "inherit",
+        pointerEvents: clickable ? undefined : "none",
       },
     };
   }), [nodes, variant, onNodeClick]);
@@ -159,7 +164,9 @@ export default function GraphVisualizer({
           elementsSelectable={false}
           nodesFocusable={false}
           edgesFocusable={false}
-          onNodeClick={onNodeClick ? (_, node) => onNodeClick(node.id) : undefined}
+          onNodeClick={onNodeClick ? (_, node) => {
+            if (node.data.clickable) onNodeClick(node.id);
+          } : undefined}
         />
       )}
     </div>
