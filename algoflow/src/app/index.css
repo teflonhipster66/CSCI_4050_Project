@@ -166,8 +166,6 @@ a.nav-item, .topic-tabs a { text-decoration: none; }
 .heap-control-button:hover:not(:disabled) { background: #efede4; }
 .heap-control-button:focus-visible, .heap-input-row input:focus-visible { outline: 3px solid #df7958; outline-offset: 2px; }
 .heap-control-button:disabled { opacity: .55; cursor: not-allowed; }
-.heap-control-button.bfs-prediction-toggle[aria-pressed="true"] { background: #315d8b; border-color: #244565; color: #fff; }
-.heap-control-button.bfs-prediction-toggle[aria-pressed="true"]:hover { background: #244565; }
 .heap-control-button.primary-control { border-color: #292b27; background: #292b27; color: #fff; }
 .heap-control-button.primary-control:hover:not(:disabled) { background: #41433d; }
 .heap-input-help, .heap-input-error { min-height: 12px; font-size: 9px; }

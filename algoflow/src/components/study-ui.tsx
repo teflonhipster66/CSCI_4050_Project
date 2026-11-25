@@ -1,5 +1,19 @@
 export type Topic = "heap" | "bfs" | "dfs" | "knapsack";
 
+export function PredictionNote({ instructions, awaitingPrediction }: { instructions: string; awaitingPrediction: boolean }) {
+  return (
+    <div className="instruction-note blue-note">
+      <span className="note-arrow">↳</span>
+      <p style={{ display: "grid" }}>
+        <span aria-hidden="true" style={{ gridArea: "1 / 1", visibility: "hidden" }}>{instructions}</span>
+        <span aria-live="polite" style={{ gridArea: "1 / 1" }}>
+          {awaitingPrediction ? "Select the next node to be discovered." : instructions}
+        </span>
+      </p>
+    </div>
+  );
+}
+
 export function Icon({ name, size = 18 }: { name: "grid" | "book" | "chart" | "settings" | "refresh" | "shuffle" | "arrow" | "bulb" | "clock" | "box"; size?: number }) {
   const paths = {
     grid: <><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></>,

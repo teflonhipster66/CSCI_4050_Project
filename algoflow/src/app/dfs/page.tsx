@@ -3,7 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { initializeDFS, stepDFS, type DFSGraph, type DFSState } from "@/algorithms/dfs";
 import GraphVisualizer, { type GraphVisualizerNode } from "@/components/graph-visualizer";
-import { BoardHeader, Facts } from "@/components/study-ui";
+import { PredictionToggle } from "@/components/prediction-toggle";
+import { BoardHeader, Facts, PredictionNote } from "@/components/study-ui";
+import { useStudyAudio } from "@/components/use-study-audio";
 
 function createGraph(nodeCount: number, edgeCount: number, edgeOrder: [string, string][] | null = null) {
   const ids = Array.from({ length: nodeCount }, (_, index) => String.fromCharCode(65 + index));
@@ -42,13 +44,25 @@ export default function DFSPage() {
   const [history, setHistory] = useState(() => [initializeDFS(graph, "A")]);
   const state = history[history.length - 1];
   const [autoRunning, setAutoRunning] = useState(false);
+  const [predictionMode, setPredictionMode] = useState(false);
+  const [predictionFeedback, setPredictionFeedback] = useState<{ step: DFSState; message: string } | null>(null);
+  const { playSelectionSound } = useStudyAudio();
+  const frame = state.stack.at(-1);
+  const current = frame?.id ?? null;
+  const neighborIndex = frame?.neighborIndex ?? 0;
+  const remainingNeighbors = current === null ? [] : graph[current].slice(neighborIndex);
+  const nextNeighbor = remainingNeighbors[0];
+  const awaitingPrediction = predictionMode && nextNeighbor !== undefined && state.vertices[nextNeighbor].color === "white";
+  const candidates = awaitingPrediction ? remainingNeighbors.filter(id => state.vertices[id].color === "white") : [];
   const running = autoRunning && !state.complete;
 
   useEffect(() => {
-    if (!running) return;
-    const timer = window.setTimeout(() => setHistory(previous => advanceHistory(graph, previous)), 1000);
+    if (!running || awaitingPrediction) return;
+    const timer = window.setTimeout(() => {
+      setHistory(previous => previous.at(-1) === state ? advanceHistory(graph, previous) : previous);
+    }, 1000);
     return () => window.clearTimeout(timer);
-  }, [running, state, graph]);
+  }, [running, awaitingPrediction, state, graph]);
 
   function reset(nextSource = source) {
     setAutoRunning(false);
@@ -78,17 +92,31 @@ export default function DFSPage() {
 
   function previousStep() {
     setAutoRunning(false);
+    setPredictionFeedback(null);
     setHistory(previous => previous.length > 1 ? previous.slice(0, -1) : previous);
   }
 
-  const frame = state.stack[state.stack.length - 1];
-  const current = frame?.id ?? null;
-  const neighborIndex = frame?.neighborIndex ?? 0;
+  function predictNode(id: string) {
+    if (!candidates.includes(id)) return;
+    if (id !== nextNeighbor) {
+      setPredictionFeedback({ step: state, message: `Try again. ${id} can be discovered, but another neighbor comes first alphabetically.` });
+      return;
+    }
+    const nextState = stepDFS(graph, state);
+    playSelectionSound(true);
+    setPredictionFeedback({ step: nextState, message: `Correct! ${nextState.message}` });
+    setHistory(previous => previous.at(-1) === state ? [...previous, nextState] : previous);
+  }
 
-  const nodes: GraphVisualizerNode[] = layout.map(node => ({
-    ...node, label: node.id, state: state.vertices[node.id].color,
-    caption: `${state.vertices[node.id].discovery ?? "—"}/${state.vertices[node.id].finish ?? "—"}`,
-  }));
+  const nodes: GraphVisualizerNode[] = layout.map(node => {
+    const isCandidate = candidates.includes(node.id);
+    const vertex = state.vertices[node.id];
+    return {
+      ...node, label: node.id, state: isCandidate ? "candidate" : vertex.color,
+      caption: isCandidate ? "candidate" : `${vertex.discovery ?? "—"}/${vertex.finish ?? "—"}`,
+      clickable: isCandidate,
+    };
+  });
   const edges = edgePairs.map(([from, to]) => {
     const unchecked = current !== null && (
       (from === current && graph[from].indexOf(to) >= neighborIndex) ||
@@ -107,10 +135,10 @@ export default function DFSPage() {
       <section className="heap-board board-graph">
         <div className="tape tape-left" />
         <BoardHeader step="DEPTH-FIRST SEARCH" title={state.complete ? "DFS complete!" : current ? `Explore ${current}'s neighbors` : `Discover ${state.roots.find(id => state.vertices[id].color === "white") ?? source}`} progress={`${finishedCount}/${layout.length}`} />
-        <div className="instruction-note blue-note">
-          <span className="note-arrow">↳</span>
-          <p>White = undiscovered. Gray = discovered but not finished. Black = finished and popped. Explore neighbors alphabetically, going deeper before backtracking.</p>
-        </div>
+        <PredictionNote
+          awaitingPrediction={awaitingPrediction}
+          instructions="White = undiscovered. Gray = discovered but not finished. Black = finished and popped. Explore neighbors alphabetically, going deeper before backtracking."
+        />
         <div className="heap-step-controls bfs-step-controls">
           <label htmlFor="dfs-source">Start vertex: {" "}
             <select id="dfs-source" value={source} onChange={event => reset(event.target.value)}>
@@ -132,14 +160,18 @@ export default function DFSPage() {
             <button type="button" className="heap-control-button" disabled={randomizedPairs === null} onClick={() => updateGraph(nodeCount, edgeCount, false)}>Default edges</button>
           </div>
         </div>
-        <GraphVisualizer nodes={nodes} edges={edges} directEdges height={400} ariaLabel="Depth-first search graph with white, gray, and black vertices" />
+        <GraphVisualizer nodes={nodes} edges={edges} directEdges height={400} ariaLabel="Depth-first search graph" onNodeClick={awaitingPrediction ? predictNode : undefined} />
         <div className="dfs-playback-row">
-          <p className="heap-feedback" aria-live="polite">{state.message}</p>
+          <p className="heap-feedback" aria-live="polite">{predictionFeedback?.step === state ? predictionFeedback.message : state.message}</p>
           <div className="heap-step-actions bfs-playback-controls">
+            <PredictionToggle enabled={predictionMode} onToggle={() => {
+              setPredictionFeedback(null);
+              setPredictionMode(value => !value);
+            }} />
             <button type="button" className="heap-control-button" onClick={() => reset()}>Reset</button>
             <button type="button" className="heap-control-button" disabled={state.complete} aria-pressed={running} onClick={() => setAutoRunning(value => !value)}>{running ? "Pause" : "Auto DFS"}</button>
             <button type="button" className="heap-control-button" disabled={history.length <= 1} onClick={previousStep}>Previous step</button>
-            <button type="button" className="heap-control-button primary-control" disabled={running || state.complete} onClick={() => setHistory(previous => advanceHistory(graph, previous))}>Next step</button>
+            <button type="button" className="heap-control-button primary-control" disabled={running || state.complete || awaitingPrediction} onClick={() => setHistory(previous => advanceHistory(graph, previous))}>Next step</button>
           </div>
         </div>
         <div className="queue-strip" role="group" aria-label="DFS call stack, top to bottom">

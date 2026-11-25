@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { initializeBFS, stepBFS, type BFSGraph, type BFSState } from "@/algorithms/bfs";
 import GraphVisualizer, { type GraphVisualizerNode } from "@/components/graph-visualizer";
-import { BoardHeader, Facts } from "@/components/study-ui";
+import { PredictionToggle } from "@/components/prediction-toggle";
+import { BoardHeader, Facts, PredictionNote } from "@/components/study-ui";
 import { useStudyAudio } from "@/components/use-study-audio";
 
 function createGraph(nodeCount: number, edgeCount: number, edgeOrder: [string, string][] | null = null) {
@@ -134,12 +135,10 @@ export default function BFSPage() {
       <section className="heap-board board-graph">
         <div className="tape tape-left" />
         <BoardHeader step="BREADTH-FIRST SEARCH" title={title} progress={`${finishedCount}/${layout.length}`} />
-        <div className="instruction-note blue-note">
-          <span className="note-arrow">↳</span>
-          <p aria-live="polite">{awaitingPrediction
-            ? "Select the next node to be discovered."
-            : "White = undiscovered. Gray = discovered, still being explored. Black = all neighbors checked. Follow FIFO queue order and check each vertex’s neighbors alphabetically."}</p>
-        </div>
+        <PredictionNote
+          awaitingPrediction={awaitingPrediction}
+          instructions="White = undiscovered. Gray = discovered, still being explored. Black = all neighbors checked. Follow FIFO queue order and check each vertex’s neighbors alphabetically."
+        />
         <div className="heap-step-controls bfs-step-controls">
           <label htmlFor="bfs-source">Start vertex: {" "}
             <select id="bfs-source" value={source} onChange={event => reset(event.target.value)}>
@@ -165,10 +164,10 @@ export default function BFSPage() {
         <div className="bfs-playback-row">
           <p className="heap-feedback" aria-live="polite">{predictionFeedback?.step === state ? predictionFeedback.message : state.message}</p>
           <div className="heap-step-actions bfs-playback-controls">
-            <button type="button" className="heap-control-button bfs-prediction-toggle" aria-pressed={predictionMode} onClick={() => {
+            <PredictionToggle enabled={predictionMode} onToggle={() => {
               setPredictionFeedback(null);
               setPredictionMode(value => !value);
-            }}>Prediction mode <span aria-hidden="true">· {predictionMode ? "On" : "Off"}</span></button>
+            }} />
             <button type="button" className="heap-control-button" onClick={() => reset()}>Reset</button>
             <button type="button" className="heap-control-button" disabled={state.complete} aria-pressed={running} onClick={() => setAutoRunning(value => !value)}>{running ? "Pause" : "Auto BFS"}</button>
             <button type="button" className="heap-control-button" disabled={history.length <= 1} onClick={previousStep}>Previous step</button>
