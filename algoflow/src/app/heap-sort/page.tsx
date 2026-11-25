@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import { buildMaxHeap } from "@/algorithms/heapsort";
 import GraphVisualizer, { type GraphVisualizerNode } from "@/components/graph-visualizer";
 import { BoardHeader, Facts } from "@/components/study-ui";
+import { useStudyAudio } from "@/components/use-study-audio";
 
 const maxValues = 15;
 const initialMaxRange = 100;
@@ -42,7 +43,7 @@ export default function HeapSortPage() {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [message, setMessage] = useState("Build a heap or extract its maximum to begin.");
   const [autoSorting, setAutoSorting] = useState(false);
-  const audioContext = useRef<AudioContext | null>(null);
+  const { getAudioContext, playSelectionSound } = useStudyAudio();
 
   const nodes = useMemo<GraphVisualizerNode[]>(() => heap.slice(0, heapSize).map((value, index) => {
     const isChildOfFocus = focusIndex !== null && (index === focusIndex * 2 + 1 || index === focusIndex * 2 + 2);
@@ -113,34 +114,9 @@ export default function HeapSortPage() {
     }
   }, [autoSorting, focusIndex, heap, heapSize]);
 
-  const playSelectionSound = useCallback((correct: boolean | null) => {
-    const currentContext = audioContext.current;
-    const context = currentContext && currentContext.state !== "closed"
-      ? currentContext
-      : new AudioContext();
-    audioContext.current = context;
-    const oscillator = context.createOscillator();
-    const gain = context.createGain();
-    const now = context.currentTime;
-
-    oscillator.type = "sine";
-    oscillator.frequency.value = correct === null ? 440 : correct ? 740 : 190;
-    gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(0.12, now + 0.015);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
-    oscillator.connect(gain);
-    gain.connect(context.destination);
-    oscillator.start(now);
-    oscillator.stop(now + 0.19);
-  }, []);
-
   const playCompletionSound = useCallback(() => {
-    const currentContext = audioContext.current;
-    const context = currentContext && currentContext.state !== "closed"
-      ? currentContext
-      : new AudioContext();
-    audioContext.current = context;
-    void context.resume();
+    const context = getAudioContext();
+    if (!context) return;
 
     [588, 740, 880, 1175].forEach((frequency, index) => {
       const start = context.currentTime + index * 0.18;
@@ -157,7 +133,7 @@ export default function HeapSortPage() {
       oscillator.start(start);
       oscillator.stop(start + 0.25);
     });
-  }, []);
+  }, [getAudioContext]);
 
   const handleNodeClick = useCallback((nodeId: string, fromAutoSort = false) => {
     if (autoSorting && !fromAutoSort) return;
@@ -253,12 +229,6 @@ export default function HeapSortPage() {
   useEffect(() => {
     if (complete) playCompletionSound();
   }, [complete, playCompletionSound]);
-
-  useEffect(() => () => {
-    const context = audioContext.current;
-    audioContext.current = null;
-    if (context && context.state !== "closed") void context.close();
-  }, []);
 
   return (
     <div className="page-grid">

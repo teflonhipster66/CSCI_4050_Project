@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { initializeBFS, stepBFS, type BFSGraph, type BFSState } from "@/algorithms/bfs";
 import GraphVisualizer, { type GraphVisualizerNode } from "@/components/graph-visualizer";
 import { BoardHeader, Facts } from "@/components/study-ui";
+import { useStudyAudio } from "@/components/use-study-audio";
 
 function createGraph(nodeCount: number, edgeCount: number, edgeOrder: [string, string][] | null = null) {
   const ids = Array.from({ length: nodeCount }, (_, index) => String.fromCharCode(65 + index));
@@ -44,6 +45,7 @@ export default function BFSPage() {
   const [autoRunning, setAutoRunning] = useState(false);
   const [predictionMode, setPredictionMode] = useState(false);
   const [predictionFeedback, setPredictionFeedback] = useState<{ step: BFSState; message: string } | null>(null);
+  const { playSelectionSound } = useStudyAudio();
   const remainingNeighbors = state.current === null ? [] : graph[state.current].slice(state.neighborIndex);
   const nextNeighbor = remainingNeighbors[0];
   const awaitingPrediction = predictionMode && nextNeighbor !== undefined && state.vertices[nextNeighbor].color === "white";
@@ -97,6 +99,7 @@ export default function BFSPage() {
       return;
     }
     const nextState = stepBFS(graph, state);
+    playSelectionSound(true);
     setPredictionFeedback({ step: nextState, message: `Correct! ${nextState.message}` });
     setHistory(previous => previous.at(-1) === state ? [...previous, nextState] : previous);
   }
