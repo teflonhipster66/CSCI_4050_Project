@@ -2,7 +2,7 @@ export type Topic = "heap" | "bfs" | "dfs" | "knapsack";
 
 export function PredictionNote({ instructions, awaitingPrediction }: { instructions: string; awaitingPrediction: boolean }) {
   return (
-    <div className="instruction-note blue-note">
+    <div className="instruction-note green-note">
       <span className="note-arrow">↳</span>
       <p style={{ display: "grid" }}>
         <span aria-hidden="true" style={{ gridArea: "1 / 1", visibility: "hidden" }}>{instructions}</span>

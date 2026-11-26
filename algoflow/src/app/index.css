@@ -115,7 +115,7 @@ h1 em::after { content: ""; position: absolute; left: 0; right: 0; bottom: -2px;
 .knapsack-cell-content > input { width: 100%; height: 100%; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; text-align: center; }
 .knapsack-value-table input:focus { outline: none; }
 .knapsack-value-table td:focus-within { outline: 2px solid #df7958; outline-offset: -2px; }
-.knapsack-value-table .knapsack-current-cell { background: #e0f3e8; box-shadow: inset 0 0 0 2px #43846a; }
+.knapsack-value-table .knapsack-current-cell { background: #fce4bb; box-shadow: inset 0 0 0 2px #df9a45; }
 .knapsack-trace { display: grid; gap: 8px; margin-top: 18px; font-size: 13px; }
 .knapsack-trace h3 { margin: 0; font-size: 16px; }
 .knapsack-trace p { margin: 0; }

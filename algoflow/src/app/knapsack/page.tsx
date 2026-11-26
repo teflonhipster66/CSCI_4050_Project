@@ -82,7 +82,7 @@ export default function KnapsackPage() {
           titleId="knapsack-input-title"
           progress={`${solvedValues.length}/${totalCells}`}
         />
-        <div className="instruction-note">
+        <div className="instruction-note blue-note">
           <span className="note-arrow" aria-hidden="true">↳</span>
           <p>Choose the combination of items with the max value without exceeding the capacity. Each item can be selected only once.
             Final combination is shown at the bottom.
